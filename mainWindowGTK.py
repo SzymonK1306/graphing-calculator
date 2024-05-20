@@ -68,10 +68,27 @@ class MainWindow(Gtk.Window):
         x_min = float(self.x_min_input.get_text())
         x_max = float(self.x_max_input.get_text())
 
-        print('Wykres')
+        if x_max < x_min:
+            self.show_error_dialog("Wartość minimalna nie może być większa niż maksymalna")
+        else:
+            plot_window = PlotWindow(equation, x_min, x_max)
+            plot_window.show()
 
-        plot_window = PlotWindow(equation, x_min, x_max)
-        plot_window.show()
+
+    def show_error_dialog(self, reason):
+        # Function to show an error dialog
+        error_dialog = Gtk.MessageDialog(
+            transient_for=self,
+            flags=0,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text="Błąd!",
+        )
+        error_dialog.format_secondary_text(reason)
+
+        # Show the error dialog
+        error_dialog.run()
+        error_dialog.destroy()
 
     def option1_selected(self, widget):
         info_text = """

@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout,
-                             QHBoxLayout, QLineEdit, QPushButton, QLabel, QMenuBar, QAction)
+                             QHBoxLayout, QLineEdit, QPushButton, QLabel, QMenuBar, QAction, QMessageBox)
 
 
 from infoWindowQt import InfoWindow
@@ -79,9 +79,24 @@ class MainWindow(QWidget):
         x_min = float(self.x_min_input.text())
         x_max = float(self.x_max_input.text())
 
-        self.plot_window = PlotWindow(equation, x_min, x_max)
-        self.plot_window.show()
+        if x_max < x_min:
+            self.show_error_dialog("Wartość minimalna nie może być większa niż maksymalna")
+        else:
+            self.plot_window = PlotWindow(equation, x_min, x_max)
+            self.plot_window.show()
 
+    def show_error_dialog(self, reason):
+        # Function to show an error dialog
+        error_dialog = QMessageBox()
+        error_dialog.setIcon(QMessageBox.Critical)
+        error_dialog.setWindowTitle("Błąd")
+        error_dialog.setText(reason)
+        # error_dialog.setInformativeText("Please check the details and try again.")
+        # error_dialog.setDetailedText("Detailed error information can be provided here.")
+        error_dialog.setStandardButtons(QMessageBox.Ok)
+
+        # Show the error dialog
+        error_dialog.exec_()
     def option1_selected(self):
         info_text = """
 Ta aplikacja realizująca kalkulator graficzny posiada następujące funkcjonalności:

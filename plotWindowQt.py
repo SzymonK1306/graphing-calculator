@@ -30,6 +30,8 @@ class PlotWindow(QDialog):
         self.x_min = x_min
         self.x_max = x_max
 
+        self.setWindowTitle("Wykres")
+
         # a figure instance to plot on
         self.figure = plt.figure()
 

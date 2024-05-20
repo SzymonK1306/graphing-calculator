@@ -5,7 +5,7 @@ class InfoWindow(QDialog):
     def __init__(self, info_text):
         super().__init__()
 
-        self.setWindowTitle("Information")
+        self.setWindowTitle("Informacje")
         self.setGeometry(200, 200, 500, 400)
 
         layout = QVBoxLayout()

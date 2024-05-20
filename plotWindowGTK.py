@@ -12,7 +12,7 @@ from matplotlib.figure import Figure
 
 class PlotWindow(Gtk.Window):
     def __init__(self, equation, x_min, x_max):
-        Gtk.Window.__init__(self, title="Plot")
+        Gtk.Window.__init__(self, title="Wykres")
 
         self.set_default_size(800, 600)
         self.equation = equation

@@ -24,7 +24,7 @@ from gi.repository import Gtk
 
 class InfoWindow(Gtk.Window):
     def __init__(self, info_text):
-        Gtk.Window.__init__(self, title="Information")
+        Gtk.Window.__init__(self, title="Informacje")
 
         self.set_default_size(850, 500)
 
