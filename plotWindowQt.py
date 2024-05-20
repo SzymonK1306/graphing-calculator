@@ -9,6 +9,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
+import sympy
 from sympy import *
 
 
@@ -62,8 +63,8 @@ class PlotWindow(QDialog):
         eval_expression = eval_expression.replace('sin', 'np.sin')
         eval_expression = eval_expression.replace('cos', 'np.cos')
         eval_expression = eval_expression.replace('tg', 'np.tan')
-        eval_expression = eval_expression.replace('ln', 'np.log')
         eval_expression = eval_expression.replace('log', 'np.log10')
+        eval_expression = eval_expression.replace('ln', 'np.log')
         eval_expression = eval_expression.replace('sqrt', 'np.sqrt')
 
         # plot data
@@ -75,6 +76,7 @@ class PlotWindow(QDialog):
         # # Define your function
         function_expression = self.equation
         function_expression = function_expression.replace('^', '**')
+        function_expression = function_expression.replace('tg', 'tan')
         f = eval(function_expression)  # Example function
         print(f)
         horizontal_asymptotes = [limit(f, x, oo), limit(f, x, -oo)]
@@ -88,7 +90,7 @@ class PlotWindow(QDialog):
         ax.set_ylabel("y")
 
         for ass in horizontal_asymptotes:
-            if ass not in [-oo, oo, oo*I, -oo*I]:
+            if ass not in [-oo, oo, oo*I, -oo*I] and not isinstance(ass, sympy.calculus.accumulationbounds.AccumulationBounds):
                 ax.axhline(ass, color='red', linestyle='--')
 
         # refresh canvas

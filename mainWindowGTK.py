@@ -1,70 +1,114 @@
-import gtk
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+from infoWindowGTK import InfoWindow
+from plotWindowGTK import PlotWindow
+
 import numpy as np
-import matplotlib.pyplot as plt
 
 
-class MainWindow:
+class MainWindow(Gtk.Window):
     def __init__(self):
-        self.window = gtk.Window()
-        self.window.set_title("Kalkulator graficzny")
-        self.window.set_size_request(400, 200)
-        self.window.connect("destroy", gtk.main_quit)
+        Gtk.Window.__init__(self, title="Kalulator graficzny")
+        self.set_border_width(10)
 
-        self.layout = gtk.VBox()
+        # Menu bar
+        menubar = Gtk.MenuBar()
+        file_menu = Gtk.Menu()
+
+        option1_action = Gtk.MenuItem(label="Informacje")
+        option1_action.connect("activate", self.option1_selected)
+        file_menu.append(option1_action)
+
+        option2_action = Gtk.MenuItem(label="Przywróć domyślne")
+        option2_action.connect("activate", self.option2_selected)
+        file_menu.append(option2_action)
+
+        menu = Gtk.MenuItem(label="Menu")
+        menu.set_submenu(file_menu)
+        menubar.append(menu)
 
         # Equation input
-        self.eq_label = gtk.Label("f(x) = ")
-        self.eq_input = gtk.Entry()
+        self.eq_label = Gtk.Label("f(x) = ")
+        self.eq_input = Gtk.Entry()
         self.eq_input.set_text("x")
-        self.eq_layout = gtk.HBox()
-        self.eq_layout.pack_start(self.eq_label, False, False, 5)
-        self.eq_layout.pack_start(self.eq_input, True, True, 5)
-        self.layout.pack_start(self.eq_layout, False, False, 5)
 
         # x-min input
-        self.x_min_label = gtk.Label("x Min: ")
-        self.x_min_input = gtk.Entry()
+        self.x_min_label = Gtk.Label("x Min: ")
+        self.x_min_input = Gtk.Entry()
         self.x_min_input.set_text("-2")
-        self.x_min_layout = gtk.HBox()
-        self.x_min_layout.pack_start(self.x_min_label, False, False, 5)
-        self.x_min_layout.pack_start(self.x_min_input, True, True, 5)
-        self.layout.pack_start(self.x_min_layout, False, False, 5)
 
         # x-max input
-        self.x_max_label = gtk.Label("x Max: ")
-        self.x_max_input = gtk.Entry()
+        self.x_max_label = Gtk.Label("x Max: ")
+        self.x_max_input = Gtk.Entry()
         self.x_max_input.set_text("2")
-        self.x_max_layout = gtk.HBox()
-        self.x_max_layout.pack_start(self.x_max_label, False, False, 5)
-        self.x_max_layout.pack_start(self.x_max_input, True, True, 5)
-        self.layout.pack_start(self.x_max_layout, False, False, 5)
 
         # Plot button
-        self.plot_button = gtk.Button(label="Narysuj wykres")
-        self.plot_button.connect("clicked", self.plot_equation)
-        self.layout.pack_start(self.plot_button, False, False, 5)
+        self.plot_button = Gtk.Button(label="Narysuj wykres")
+        self.plot_button.connect("clicked", self.plotEquation)
 
-        self.window.add(self.layout)
-        self.window.show_all()
+        grid = Gtk.Grid()
+        grid.attach(self.eq_label, 0, 0, 1, 1)
+        grid.attach(self.eq_input, 1, 0, 1, 1)
+        grid.attach(self.x_min_label, 0, 1, 1, 1)
+        grid.attach(self.x_min_input, 1, 1, 1, 1)
+        grid.attach(self.x_max_label, 0, 2, 1, 1)
+        grid.attach(self.x_max_input, 1, 2, 1, 1)
+        grid.attach(self.plot_button, 0, 3, 2, 1)
 
-    def plot_equation(self, widget):
+        vbox = Gtk.VBox()
+        vbox.pack_start(menubar, False, False, 0)
+        vbox.pack_start(grid, True, True, 0)
+
+        self.add(vbox)
+
+    def plotEquation(self, button):
         equation = self.eq_input.get_text()
         x_min = float(self.x_min_input.get_text())
         x_max = float(self.x_max_input.get_text())
 
-        x = np.linspace(x_min, x_max, 100)
-        y = eval(equation)
+        print('Wykres')
 
-        plt.plot(x, y)
-        plt.xlabel('x')
-        plt.ylabel('f(x)')
-        plt.title('Wykres funkcji')
-        plt.grid(True)
-        plt.show()
+        plot_window = PlotWindow(equation, x_min, x_max)
+        plot_window.show()
+
+    def option1_selected(self, widget):
+        info_text = """
+        Ta aplikacja realizująca kalkulator graficzny posiada następujące funkcjonalności:
+        - Wprowadzenie wzoru funkcji w pole tekstowe
+        - Ograniczenie dziedziny funkcji poprzez wprowadzenie jej w pole tekstowe
+        - Możliwość narysowania wykresu funkcji jednej zmiennej. Dopuszczalne są funkcje
+        różnego rodzaju (funkcje wielomianowe, wymierne, wykładnicze, logarytmiczne,
+        trygonometryczne) poprzez naciśnięcie przycisku “Narysuj wykres”. Powoduje to
+        otwarcie nowego okna zawierającego wykres.
+        - Odrzucanie błędnie skonstruowanych formuł matematycznych oraz wykrywanie
+        błędów w dziedzinie. Wystąpienie tego rodzaju błędów jest sygnalizowane
+        odpowiednim oknem dialogowym
+        - Menu zawierające możliwość zapoznania się z krótkim opisem aplikacji oraz
+        wczytania domyślnych zawartości pól tekstowych
+
+        Zasady poprawnego wprowadzania wzorów funckji
+        - dostępne są wymienione operacje matematyczne - dodatanie (+), odejmowanie (-), mnożenie (*), dzielenie(/), potęgowanie (^)
+        - dostępne są wymienione funckcje - wielomiany, funckje wymierne, exp(x), ln(x), sin(x), cos(x), tg(x), sqrt(x)
+        - funckje wymierne należy wprowadzać z jedną kreską ułamkową
+        - należy wprowadzić wszystkie operacje występujące we wzorze włącznie z operatorem mnożenia
+        """
+        print('Dziala')
+        self.info_window = InfoWindow(info_text)
+        self.info_window.show()
+
+    def option2_selected(self, widget):
+        self.x_max_input.set_text("2")
+        self.x_min_input.set_text("-2")
+        self.eq_input.set_text("x")
 
 
 def main():
-    gtk.main()
+    win = MainWindow()
+    win.connect("destroy", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
 
 
 if __name__ == "__main__":
