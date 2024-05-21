@@ -9,11 +9,6 @@ import warnings
 
 def custom_warning_handler(message, category, filename, lineno, file=None, line=None):
     if issubclass(category, RuntimeWarning):
-        # Format the warning message
-        warning_message = warnings.formatwarning(message, category, filename, lineno, line)
-
-        # Print the warning message (optional)
-        # print(warning_message)
 
         # Trigger the PyQt5 dialog
         show_warning_dialog('Wprowadzony zakres nie pokrywa się w pełni z dziedziną funkcji, wyznaczono wartości tylko dla poprawnych punktów')

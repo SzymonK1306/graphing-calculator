@@ -24,6 +24,44 @@ class PlotWindow(Gtk.Window):
 
         fig = Figure(figsize=(5, 4), dpi=100)
         ax = fig.add_subplot()
+        x = symbols('x')
+        #
+        # # Define your function
+        function_expression = self.equation
+        function_expression = function_expression.replace('^', '**')
+        function_expression = function_expression.replace('tg', 'tan')
+        try:
+            f = eval(function_expression)  # Example function
+        except SyntaxError:
+            f = x
+            if not raised:
+                raised = True
+                self.show_error_dialog('Wprowadzono błędne wyrażenie, sprawdź je i spróbuj ponownie')
+
+        horizontal_asymptotes = [limit(f, x, oo), limit(f, x, -oo)]
+
+        for ass in horizontal_asymptotes:
+            if ass not in [-oo, oo, oo * I, -oo * I] and not isinstance(ass,
+                                                                        sympy.calculus.accumulationbounds.AccumulationBounds):
+                ax.axhline(ass, color='red', linestyle='--')
+
+        domain = calculus.util.continuous_domain(f, x, S.Reals)
+
+        potential_points = domain.boundary
+
+        vertical_asymptotes = []
+
+        potential_points_list = list(potential_points)
+        for point in potential_points_list:
+            left_limit = limit(f, x, point, dir='-')
+            right_limit = limit(f, x, point, dir='+')
+            if left_limit in [-oo, oo] or right_limit in [-oo, oo]:
+                vertical_asymptotes.append(point)
+
+        # Draw vertical asymptotes
+        for v_ass in vertical_asymptotes:
+            ax.axvline(v_ass, color='red', linestyle='--')
+
         eval_expression = self.equation.replace('exp', 'np.exp')
         eval_expression = eval_expression.replace('^', '**')
         eval_expression = eval_expression.replace('sin', 'np.sin')
@@ -38,44 +76,26 @@ class PlotWindow(Gtk.Window):
         try:
             y = eval(eval_expression, {'x': x_vector, 'np': np})
         except SyntaxError:
-            self.close()
             y = np.zeros(len(x_vector))
             if not raised:
                 raised = True
                 self.show_error_dialog('Wprowadzono błędne wyrażenie, sprawdź je i spróbuj ponownie')
-                return
-        except RuntimeWarning:
-            pass
 
-        x = symbols('x')
-        #
-        # # Define your function
-        function_expression = self.equation
-        function_expression = function_expression.replace('^', '**')
-        function_expression = function_expression.replace('tg', 'tan')
-        try:
-            f = eval(function_expression)  # Example function
-        except SyntaxError:
-            self.close()
-            f = x
-            if not raised:
-                raised = True
-                self.show_error_dialog('Wprowadzono błędne wyrażenie, sprawdź je i spróbuj ponownie')
-                return
-        horizontal_asymptotes = [limit(f, x, oo), limit(f, x, -oo)]
-        #
-        # # Calculate horizontal asymptotes
-        print(horizontal_asymptotes)
-
-        ax.plot(x_vector, y)
+        y_list = []
+        start_idx = 0
+        for asv in vertical_asymptotes:
+            closest_index = np.argmin(np.abs(x_vector - asv))
+            y_list.append((x_vector[start_idx:closest_index], y[start_idx:closest_index]))
+            start_idx = closest_index
+        y_list.append((x_vector[start_idx:-1], y[start_idx:-1]))
+        if len(y_list) != 0:
+            for xx, yy in y_list:
+                ax.plot(xx, yy, color='blue')
+        else:
+            ax.plot(x_vector, y)
         ax.set_title(self.equation)
         ax.set_xlabel("x")
         ax.set_ylabel("y")
-
-        for ass in horizontal_asymptotes:
-            if ass not in [-oo, oo, oo * I, -oo * I] and not isinstance(ass,
-                                                                        sympy.calculus.accumulationbounds.AccumulationBounds):
-                ax.axhline(ass, color='red', linestyle='--')
 
         canvas = FigureCanvas(fig)  # a Gtk.DrawingArea
 
