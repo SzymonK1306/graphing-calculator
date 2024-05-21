@@ -7,10 +7,41 @@ from plotWindowGTK import PlotWindow
 
 import numpy as np
 
+import warnings
+
+
+def custom_warning_handler(message, category, filename, lineno, file=None, line=None):
+    if issubclass(category, RuntimeWarning):
+        # Format the warning message
+        warning_message = warnings.formatwarning(message, category, filename, lineno, line)
+
+        # Print the warning message (optional)
+        # print(warning_message)
+
+        # Trigger the PyQt5 dialog
+        show_warning_dialog(
+            'Wprowadzony zakres nie pokrywa się w pełni z dziedziną funkcji, wyznaczono wartości tylko dla poprawnych punktów')
+
+
+def show_warning_dialog(message):
+    # Create a message dialog
+    dialog = Gtk.MessageDialog(
+        transient_for=None,
+        flags=0,
+        message_type=Gtk.MessageType.WARNING,
+        buttons=Gtk.ButtonsType.OK,
+        text="Ostrzeżenie",
+    )
+    dialog.format_secondary_text(message)
+
+    # Show the dialog and wait for response
+    dialog.run()
+    dialog.destroy()
 
 class MainWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Kalulator graficzny")
+        self.set_default_size(400, 200)
         self.set_border_width(10)
 
         # Menu bar
@@ -30,19 +61,19 @@ class MainWindow(Gtk.Window):
         menubar.append(menu)
 
         # Equation input
-        self.eq_label = Gtk.Label("f(x) = ")
+        self.eq_label = Gtk.Label(label="f(x) = ")
         self.eq_input = Gtk.Entry()
-        self.eq_input.set_text("x")
+        self.eq_input.set_text("exp(x)")
 
         # x-min input
-        self.x_min_label = Gtk.Label("x Min: ")
+        self.x_min_label = Gtk.Label(label="x Min: ")
         self.x_min_input = Gtk.Entry()
-        self.x_min_input.set_text("-2")
+        self.x_min_input.set_text("-5")
 
         # x-max input
-        self.x_max_label = Gtk.Label("x Max: ")
+        self.x_max_label = Gtk.Label(label="x Max: ")
         self.x_max_input = Gtk.Entry()
-        self.x_max_input.set_text("2")
+        self.x_max_input.set_text("5")
 
         # Plot button
         self.plot_button = Gtk.Button(label="Narysuj wykres")
@@ -65,14 +96,16 @@ class MainWindow(Gtk.Window):
 
     def plotEquation(self, button):
         equation = self.eq_input.get_text()
-        x_min = float(self.x_min_input.get_text())
-        x_max = float(self.x_max_input.get_text())
-
-        if x_max < x_min:
-            self.show_error_dialog("Wartość minimalna nie może być większa niż maksymalna")
-        else:
-            plot_window = PlotWindow(equation, x_min, x_max)
-            plot_window.show()
+        try:
+            x_min = float(self.x_min_input.get_text())
+            x_max = float(self.x_max_input.get_text())
+            if x_max <= x_min:
+                self.show_error_dialog("Wartość minimalna musi być mniejsza niż maksymalna")
+            else:
+                plot_window = PlotWindow(equation, x_min, x_max)
+                plot_window.show()
+        except ValueError:
+            self.show_error_dialog("Wartość w polu powinna być liczbą dziesiętną")
 
 
     def show_error_dialog(self, reason):
@@ -116,12 +149,13 @@ class MainWindow(Gtk.Window):
         self.info_window.show()
 
     def option2_selected(self, widget):
-        self.x_max_input.set_text("2")
-        self.x_min_input.set_text("-2")
-        self.eq_input.set_text("x")
+        self.x_max_input.set_text("5")
+        self.x_min_input.set_text("-5")
+        self.eq_input.set_text("exp(x)")
 
 
 def main():
+    warnings.showwarning = custom_warning_handler
     win = MainWindow()
     win.connect("destroy", Gtk.main_quit)
     win.show_all()

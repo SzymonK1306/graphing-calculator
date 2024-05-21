@@ -1,7 +1,9 @@
+
+
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from PyQt5.QtWidgets import (QVBoxLayout, QDialog, )
+from PyQt5.QtWidgets import (QVBoxLayout, QDialog, QMessageBox, )
 matplotlib.use('Qt5Agg')
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -54,6 +56,7 @@ class PlotWindow(QDialog):
 
     # action called by the push button
     def plot(self, equation, x_min, x_max):
+        raised = False
         # clearing old figure
         self.figure.clear()
 
@@ -71,7 +74,13 @@ class PlotWindow(QDialog):
 
         # plot data
         x_vector = np.linspace(self.x_min, self.x_max, 400)
-        y = eval(eval_expression, {'x': x_vector, 'np': np})
+        try:
+            y = eval(eval_expression, {'x': x_vector, 'np': np})
+        except SyntaxError:
+            y = np.zeros(len(x_vector))
+            if not raised:
+                raised = True
+                self.show_error_dialog('Wprowadzono błędne wyrażenie, sprawdź je i spróbuj ponownie')
 
         x = symbols('x')
         #
@@ -79,8 +88,14 @@ class PlotWindow(QDialog):
         function_expression = self.equation
         function_expression = function_expression.replace('^', '**')
         function_expression = function_expression.replace('tg', 'tan')
-        f = eval(function_expression)  # Example function
-        print(f)
+        try:
+            f = eval(function_expression)  # Example function
+        except SyntaxError:
+            f = x
+            if not raised:
+                raised = True
+                self.show_error_dialog('Wprowadzono błędne wyrażenie, sprawdź je i spróbuj ponownie')
+
         horizontal_asymptotes = [limit(f, x, oo), limit(f, x, -oo)]
         #
         # # Calculate horizontal asymptotes
@@ -97,3 +112,27 @@ class PlotWindow(QDialog):
 
         # refresh canvas
         self.canvas.draw()
+
+    def show_error_dialog(self, reason):
+        # Function to show an error dialog
+        error_dialog = QMessageBox()
+        error_dialog.setIcon(QMessageBox.Critical)
+        error_dialog.setWindowTitle("Błąd")
+        error_dialog.setText(reason)
+        # error_dialog.setInformativeText("Please check the details and try again.")
+        # error_dialog.setDetailedText("Detailed error information can be provided here.")
+        error_dialog.setStandardButtons(QMessageBox.Ok)
+
+        # Show the error dialog
+        error_dialog.exec_()
+
+    # def show_warning_dialog(self, reason):
+    #     # Close the main window
+    #     self.close()
+    #     # Show the warning message
+    #     warning_msg = QMessageBox()
+    #     warning_msg.setIcon(QMessageBox.Warning)
+    #     warning_msg.setWindowTitle("Warning")
+    #     warning_msg.setText(reason)
+    #     warning_msg.setStandardButtons(QMessageBox.Ok)
+    #     warning_msg.exec_()

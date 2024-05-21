@@ -1,6 +1,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+import warnings
 
 import numpy as np
 import sympy
@@ -13,6 +14,8 @@ from matplotlib.figure import Figure
 class PlotWindow(Gtk.Window):
     def __init__(self, equation, x_min, x_max):
         Gtk.Window.__init__(self, title="Wykres")
+
+        raised = False
 
         self.set_default_size(800, 600)
         self.equation = equation
@@ -32,7 +35,17 @@ class PlotWindow(Gtk.Window):
 
         # plot data
         x_vector = np.linspace(self.x_min, self.x_max, 400)
-        y = eval(eval_expression, {'x': x_vector, 'np': np})
+        try:
+            y = eval(eval_expression, {'x': x_vector, 'np': np})
+        except SyntaxError:
+            self.close()
+            y = np.zeros(len(x_vector))
+            if not raised:
+                raised = True
+                self.show_error_dialog('Wprowadzono błędne wyrażenie, sprawdź je i spróbuj ponownie')
+                return
+        except RuntimeWarning:
+            pass
 
         x = symbols('x')
         #
@@ -40,8 +53,15 @@ class PlotWindow(Gtk.Window):
         function_expression = self.equation
         function_expression = function_expression.replace('^', '**')
         function_expression = function_expression.replace('tg', 'tan')
-        f = eval(function_expression)  # Example function
-        print(f)
+        try:
+            f = eval(function_expression)  # Example function
+        except SyntaxError:
+            self.close()
+            f = x
+            if not raised:
+                raised = True
+                self.show_error_dialog('Wprowadzono błędne wyrażenie, sprawdź je i spróbuj ponownie')
+                return
         horizontal_asymptotes = [limit(f, x, oo), limit(f, x, -oo)]
         #
         # # Calculate horizontal asymptotes
@@ -66,3 +86,19 @@ class PlotWindow(Gtk.Window):
         self.add(sw)
 
         self.show_all()
+
+    def show_error_dialog(self, reason):
+        # Function to show an error dialog
+        error_dialog = Gtk.MessageDialog(
+            transient_for=self,
+            flags=0,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text="Błąd!",
+        )
+        error_dialog.format_secondary_text(reason)
+
+        # Show the error dialog
+        error_dialog.run()
+        error_dialog.destroy()
+

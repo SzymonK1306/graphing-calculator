@@ -1,17 +1,34 @@
 import sys
-import random
-import re
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout,
                              QHBoxLayout, QLineEdit, QPushButton, QLabel, QMenuBar, QAction, QMessageBox)
-
 
 from infoWindowQt import InfoWindow
 from plotWindowQt import PlotWindow
 
+import warnings
 
+def custom_warning_handler(message, category, filename, lineno, file=None, line=None):
+    if issubclass(category, RuntimeWarning):
+        # Format the warning message
+        warning_message = warnings.formatwarning(message, category, filename, lineno, line)
+
+        # Print the warning message (optional)
+        # print(warning_message)
+
+        # Trigger the PyQt5 dialog
+        show_warning_dialog('Wprowadzony zakres nie pokrywa się w pełni z dziedziną funkcji, wyznaczono wartości tylko dla poprawnych punktów')
+
+
+def show_warning_dialog(message):
+    # Create a message box
+    msg_box = QMessageBox()
+    msg_box.setIcon(QMessageBox.Warning)
+    msg_box.setWindowTitle("Ostrzeżenie!")
+    msg_box.setText(message)
+    msg_box.setStandardButtons(QMessageBox.Ok)
+
+    # Show the message box
+    msg_box.exec_()
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -44,7 +61,7 @@ class MainWindow(QWidget):
         eq_layout = QHBoxLayout()
         self.eq_label = QLabel("f(x) = ")
         self.eq_input = QLineEdit()
-        self.eq_input.insert('x')
+        self.eq_input.insert('exp(x)')
         eq_layout.addWidget(self.eq_label)
         eq_layout.addWidget(self.eq_input)
         layout.addLayout(eq_layout)
@@ -53,7 +70,7 @@ class MainWindow(QWidget):
         x_min_layout = QHBoxLayout()
         self.x_min_label = QLabel("x Min: ")
         self.x_min_input = QLineEdit()
-        self.x_min_input.insert('-2')
+        self.x_min_input.insert('-5')
         x_min_layout.addWidget(self.x_min_label)
         x_min_layout.addWidget(self.x_min_input)
         layout.addLayout(x_min_layout)
@@ -62,7 +79,7 @@ class MainWindow(QWidget):
         x_max_layout = QHBoxLayout()
         self.x_max_label = QLabel("x Max: ")
         self.x_max_input = QLineEdit()
-        self.x_max_input.insert('2')
+        self.x_max_input.insert('5')
         x_max_layout.addWidget(self.x_max_label)
         x_max_layout.addWidget(self.x_max_input)
         layout.addLayout(x_max_layout)
@@ -76,14 +93,17 @@ class MainWindow(QWidget):
 
     def plotEquation(self):
         equation = self.eq_input.text()
-        x_min = float(self.x_min_input.text())
-        x_max = float(self.x_max_input.text())
+        try:
+            x_min = float(self.x_min_input.text())
+            x_max = float(self.x_max_input.text())
+            if x_max <= x_min:
+                self.show_error_dialog("Wartość minimalna musi być mniejsza niż maksymalna")
+            else:
+                self.plot_window = PlotWindow(equation, x_min, x_max)
+                self.plot_window.show()
+        except ValueError:
+            self.show_error_dialog("Wartość w polu powinna być liczbą dziesiętną")
 
-        if x_max < x_min:
-            self.show_error_dialog("Wartość minimalna nie może być większa niż maksymalna")
-        else:
-            self.plot_window = PlotWindow(equation, x_min, x_max)
-            self.plot_window.show()
 
     def show_error_dialog(self, reason):
         # Function to show an error dialog
@@ -124,16 +144,17 @@ Zasady poprawnego wprowadzania wzorów funckji
 
     def option2_selected(self):
         self.x_max_input.clear()
-        self.x_max_input.insert('2')
+        self.x_max_input.insert('5')
 
         self.x_min_input.clear()
-        self.x_min_input.insert('-2')
+        self.x_min_input.insert('-5')
 
         self.eq_input.clear()
-        self.eq_input.insert('x')
+        self.eq_input.insert('exp(x)')
 
 
 def main():
+    warnings.showwarning = custom_warning_handler
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
