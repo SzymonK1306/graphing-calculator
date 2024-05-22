@@ -5,7 +5,6 @@ from gi.repository import Gtk
 from infoWindowGTK import InfoWindow
 from plotWindowGTK import PlotWindow
 
-import numpy as np
 
 import warnings
 
@@ -55,17 +54,17 @@ class MainWindow(Gtk.Window):
         # Equation input
         self.eq_label = Gtk.Label(label="f(x) = ")
         self.eq_input = Gtk.Entry()
-        self.eq_input.set_text("exp(x)")
+        self.eq_input.set_text("1 - 1.15*sin(0.86*x + 1.047)*exp(-0.5*x)")
 
         # x-min input
         self.x_min_label = Gtk.Label(label="x Min: ")
         self.x_min_input = Gtk.Entry()
-        self.x_min_input.set_text("-5")
+        self.x_min_input.set_text("0")
 
         # x-max input
         self.x_max_label = Gtk.Label(label="x Max: ")
         self.x_max_input = Gtk.Entry()
-        self.x_max_input.set_text("5")
+        self.x_max_input.set_text("15")
 
         # Plot button
         self.plot_button = Gtk.Button(label="Narysuj wykres")
@@ -139,9 +138,9 @@ class MainWindow(Gtk.Window):
         self.info_window.show()
 
     def option2_selected(self, widget):
-        self.x_max_input.set_text("5")
-        self.x_min_input.set_text("-5")
-        self.eq_input.set_text("exp(x)")
+        self.x_max_input.set_text("15")
+        self.x_min_input.set_text("0")
+        self.eq_input.set_text("1 - 1.15*sin(0.86*x + 1.047)*exp(-0.5*x)")
 
 
 def main():
