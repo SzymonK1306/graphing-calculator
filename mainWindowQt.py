@@ -10,7 +10,6 @@ import warnings
 def custom_warning_handler(message, category, filename, lineno, file=None, line=None):
     if issubclass(category, RuntimeWarning):
 
-        # Trigger the PyQt5 dialog
         show_warning_dialog('Wprowadzony zakres nie pokrywa się w pełni z dziedziną funkcji, wyznaczono wartości tylko dla poprawnych punktów')
 
 
@@ -56,7 +55,7 @@ class MainWindow(QWidget):
         eq_layout = QHBoxLayout()
         self.eq_label = QLabel("f(x) = ")
         self.eq_input = QLineEdit()
-        self.eq_input.insert('exp(x)')
+        self.eq_input.insert('1 - 1.15*sin(0.86*x + 1.047)*exp(-0.5*x)')
         eq_layout.addWidget(self.eq_label)
         eq_layout.addWidget(self.eq_input)
         layout.addLayout(eq_layout)
@@ -65,7 +64,7 @@ class MainWindow(QWidget):
         x_min_layout = QHBoxLayout()
         self.x_min_label = QLabel("x Min: ")
         self.x_min_input = QLineEdit()
-        self.x_min_input.insert('-5')
+        self.x_min_input.insert('0')
         x_min_layout.addWidget(self.x_min_label)
         x_min_layout.addWidget(self.x_min_input)
         layout.addLayout(x_min_layout)
@@ -74,7 +73,7 @@ class MainWindow(QWidget):
         x_max_layout = QHBoxLayout()
         self.x_max_label = QLabel("x Max: ")
         self.x_max_input = QLineEdit()
-        self.x_max_input.insert('5')
+        self.x_max_input.insert('15')
         x_max_layout.addWidget(self.x_max_label)
         x_max_layout.addWidget(self.x_max_input)
         layout.addLayout(x_max_layout)
@@ -129,8 +128,7 @@ wczytania domyślnych zawartości pól tekstowych
 
 Zasady poprawnego wprowadzania wzorów funckji
 - dostępne są wymienione operacje matematyczne - dodatanie (+), odejmowanie (-), mnożenie (*), dzielenie(/), potęgowanie (^)
-- dostępne są wymienione funckcje - wielomiany, funckje wymierne, exp(x), ln(x), sin(x), cos(x), tg(x), sqrt(x)
-- funckje wymierne należy wprowadzać z jedną kreską ułamkową
+- dostępne są wymienione funckcje - wielomiany, funckje wymierne, exp(x), ln(x), sin(x), cos(x), sqrt(x)
 - należy wprowadzić wszystkie operacje występujące we wzorze włącznie z operatorem mnożenia
 
         """
@@ -139,13 +137,13 @@ Zasady poprawnego wprowadzania wzorów funckji
 
     def option2_selected(self):
         self.x_max_input.clear()
-        self.x_max_input.insert('5')
+        self.x_max_input.insert('15')
 
         self.x_min_input.clear()
-        self.x_min_input.insert('-5')
+        self.x_min_input.insert('0')
 
         self.eq_input.clear()
-        self.eq_input.insert('exp(x)')
+        self.eq_input.insert('1 - 1.15*sin(0.86*x + 1.047)*exp(-0.5*x)')
 
 
 def main():

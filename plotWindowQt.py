@@ -54,7 +54,6 @@ class PlotWindow(QDialog):
 
         self.plot(equation, x_min, x_max)
 
-    # action called by the push button
     def plot(self, equation, x_min, x_max):
         raised = False
         # clearing old figure
@@ -81,24 +80,10 @@ class PlotWindow(QDialog):
 
         for ass in horizontal_asymptotes:
             if ass not in [-oo, oo, oo*I, -oo*I] and not isinstance(ass, sympy.calculus.accumulationbounds.AccumulationBounds):
-                ax.axhline(ass, color='red', linestyle='--')
-
-        domain = calculus.util.continuous_domain(f, x, S.Reals)
-
-        potential_points = domain.boundary
-
-        vertical_asymptotes = []
-
-        potential_points_list = list(potential_points)
-        for point in potential_points_list:
-            left_limit = limit(f, x, point, dir='-')
-            right_limit = limit(f, x, point, dir='+')
-            if left_limit in [-oo, oo] or right_limit in [-oo, oo]:
-                vertical_asymptotes.append(point)
-
-        # Draw vertical asymptotes
-        for v_ass in vertical_asymptotes:
-            ax.axvline(v_ass, color='red', linestyle='--')
+                try:
+                    ax.axhline(ass, color='red', linestyle='--')
+                except:
+                    pass
 
         eval_expression = self.equation.replace('exp', 'np.exp')
         eval_expression = eval_expression.replace('^', '**')
@@ -119,12 +104,32 @@ class PlotWindow(QDialog):
                 raised = True
                 self.show_error_dialog('Wprowadzono błędne wyrażenie, sprawdź je i spróbuj ponownie')
 
+        if isinstance(y, int):
+            y = y * np.ones(len(x_vector))
         y_list = []
         start_idx = 0
-        for asv in vertical_asymptotes:
-            closest_index = np.argmin(np.abs(x_vector - asv))
-            y_list.append((x_vector[start_idx:closest_index], y[start_idx:closest_index]))
-            start_idx = closest_index
+        try:
+            domain = calculus.util.continuous_domain(f, x, S.Reals)
+
+            potential_points = domain.boundary
+
+            vertical_asymptotes = []
+
+            potential_points_list = list(potential_points)
+            for point in potential_points_list:
+                left_limit = limit(f, x, point, dir='-')
+                right_limit = limit(f, x, point, dir='+')
+                if left_limit in [-oo, oo] or right_limit in [-oo, oo]:
+                    vertical_asymptotes.append(point)
+
+            # Draw vertical asymptotes
+            for v_ass in vertical_asymptotes:
+                ax.axvline(v_ass, color='red', linestyle='--')
+                closest_index = np.argmin(np.abs(x_vector - v_ass))
+                y_list.append((x_vector[start_idx:closest_index], y[start_idx:closest_index]))
+                start_idx = closest_index
+        except:
+            pass
         y_list.append((x_vector[start_idx:-1], y[start_idx:-1]))
         if len(y_list) != 0:
             for xx, yy in y_list:
@@ -139,13 +144,11 @@ class PlotWindow(QDialog):
         self.canvas.draw()
 
     def show_error_dialog(self, reason):
-        # Function to show an error dialog
         error_dialog = QMessageBox()
         error_dialog.setIcon(QMessageBox.Critical)
         error_dialog.setWindowTitle("Błąd")
         error_dialog.setText(reason)
         error_dialog.setStandardButtons(QMessageBox.Ok)
 
-        # Show the error dialog
         error_dialog.exec_()
 

@@ -12,7 +12,6 @@ import warnings
 
 def custom_warning_handler(message, category, filename, lineno, file=None, line=None):
     if issubclass(category, RuntimeWarning):
-        # Trigger the PyQt5 dialog
         show_warning_dialog(
             'Wprowadzony zakres nie pokrywa się w pełni z dziedziną funkcji, wyznaczono wartości tylko dla poprawnych punktów')
 
@@ -28,7 +27,6 @@ def show_warning_dialog(message):
     )
     dialog.format_secondary_text(message)
 
-    # Show the dialog and wait for response
     dialog.run()
     dialog.destroy()
 
@@ -134,8 +132,7 @@ class MainWindow(Gtk.Window):
 
         Zasady poprawnego wprowadzania wzorów funckji
         - dostępne są wymienione operacje matematyczne - dodatanie (+), odejmowanie (-), mnożenie (*), dzielenie(/), potęgowanie (^)
-        - dostępne są wymienione funckcje - wielomiany, funckje wymierne, exp(x), ln(x), sin(x), cos(x), tg(x), sqrt(x)
-        - funckje wymierne należy wprowadzać z jedną kreską ułamkową
+        - dostępne są wymienione funckcje - wielomiany, funckje wymierne, exp(x), ln(x), sin(x), cos(x), sqrt(x)
         - należy wprowadzić wszystkie operacje występujące we wzorze włącznie z operatorem mnożenia
         """
         self.info_window = InfoWindow(info_text)
